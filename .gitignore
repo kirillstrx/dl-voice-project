@@ -112,3 +112,22 @@ outputs/
 .vscode/
 .idea/
 __MACOSX/
+
+
+# Environment
+.venv/
+
+# Training outputs
+saved/
+wandb/
+outputs/
+multirun/
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# macOS
+.DS_Store

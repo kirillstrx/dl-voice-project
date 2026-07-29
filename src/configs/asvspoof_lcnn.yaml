@@ -1,0 +1,105 @@
+model:
+  _target_: src.model.lcnn.LCNN
+  dropout: 0.75
+  num_classes: 2
+
+writer:
+  _target_: src.logger.WandBWriter
+  project_name: "asvspoof2019_lcnn"
+  entity: null
+  run_name: "lcnn"
+  mode: "online"
+  loss_names: ["loss"]
+  log_checkpoints: false
+  id_length: 8
+
+metrics:
+  train:
+    - _target_: src.metrics.eer.AccuracyMetric
+      name: "Accuracy"
+
+  inference:
+    - _target_: src.metrics.eer.AccuracyMetric
+      name: "Accuracy"
+
+    - _target_: src.metrics.eer.EERMetric
+      name: "EER"
+
+transforms:
+  instance_transforms:
+    train:
+      audio:
+        _target_: src.transforms.spectrogram.LogPowerSpectrogram
+        n_fft: 1724
+        win_length: 1724
+        hop_length: 130
+        log_epsilon: 1e-6
+
+    inference:
+      audio:
+        _target_: src.transforms.spectrogram.LogPowerSpectrogram
+        n_fft: 1724
+        win_length: 1724
+        hop_length: 130
+        log_epsilon: 1e-6
+
+  batch_transforms:
+    train: null
+    inference: null
+
+datasets:
+  train:
+    _target_: src.datasets.asvspoof_dataset.ASVspoofDataset
+    root: "/Users/kirillstrashnov/.cache/kagglehub/datasets/awsaf49/asvpoof-2019-dataset/versions/1"
+    split: "train"
+    sample_rate: 16000
+    num_samples: 79594
+    limit: null
+    shuffle_index: false
+    instance_transforms: ${transforms.instance_transforms.train}
+
+  dev:
+    _target_: src.datasets.asvspoof_dataset.ASVspoofDataset
+    root: "/Users/kirillstrashnov/.cache/kagglehub/datasets/awsaf49/asvpoof-2019-dataset/versions/1"
+    split: "dev"
+    sample_rate: 16000
+    num_samples: 79594
+    limit: null
+    shuffle_index: false
+    instance_transforms: ${transforms.instance_transforms.inference}
+
+
+dataloader:
+  _target_: torch.utils.data.DataLoader
+  batch_size: 8
+  num_workers: 0
+  pin_memory: false
+
+optimizer:
+  _target_: torch.optim.Adam
+  lr: 3e-4
+
+lr_scheduler:
+  _target_: torch.optim.lr_scheduler.StepLR
+  step_size: 31720
+  gamma: 0.5
+
+loss_function:
+  _target_: src.loss.ExampleLoss
+
+trainer:
+  log_step: 50
+  n_epochs: 30
+  epoch_len: null
+  device_tensors:
+    - "audio"
+    - "labels"
+  resume_from: null
+  device: "mps"
+  override: false
+  monitor: "min dev_EER"
+  save_period: 5
+  early_stop: 30
+  save_dir: "saved"
+  seed: 1
+  skip_oom: true
