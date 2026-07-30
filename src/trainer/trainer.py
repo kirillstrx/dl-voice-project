@@ -18,7 +18,8 @@ class Trainer(BaseTrainer):
 
         if self.is_train:
             metric_funcs = self.metrics["train"]
-            self.optimizer.zero_grad()
+            self.optimizer.zero_grad(
+                set_to_none=True)
 
         outputs = self.model(**batch)
         batch.update(outputs)
@@ -66,7 +67,7 @@ class Trainer(BaseTrainer):
         all_logits = []
         all_labels = []
 
-        with torch.no_grad():
+        with torch.inference_mode():
             for batch_idx, batch in tqdm(
                 enumerate(dataloader),
                 desc=part,

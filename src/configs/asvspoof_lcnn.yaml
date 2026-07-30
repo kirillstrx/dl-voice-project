@@ -27,6 +27,10 @@ metrics:
 
 transforms:
   instance_transforms:
+    train: null
+    inference: null
+
+  batch_transforms:
     train:
       audio:
         _target_: src.transforms.spectrogram.LogPowerSpectrogram
@@ -42,10 +46,6 @@ transforms:
         win_length: 1724
         hop_length: 130
         log_epsilon: 1e-6
-
-  batch_transforms:
-    train: null
-    inference: null
 
 datasets:
   train:
@@ -71,9 +71,11 @@ datasets:
 
 dataloader:
   _target_: torch.utils.data.DataLoader
-  batch_size: 8
-  num_workers: 0
-  pin_memory: false
+  batch_size: 32
+  num_workers: 4
+  pin_memory: true
+  persistent_workers: true
+  prefetch_factor: 2
 
 optimizer:
   _target_: torch.optim.Adam
@@ -81,7 +83,7 @@ optimizer:
 
 lr_scheduler:
   _target_: torch.optim.lr_scheduler.StepLR
-  step_size: 31720
+  step_size: 8000
   gamma: 0.5
 
 loss_function:
@@ -90,7 +92,7 @@ loss_function:
 trainer:
   log_step: 50
   n_epochs: 30
-  epoch_len: null
+  epoch_len: 800
   device_tensors:
     - "audio"
     - "labels"
