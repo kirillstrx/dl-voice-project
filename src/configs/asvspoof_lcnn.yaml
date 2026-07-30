@@ -71,7 +71,7 @@ datasets:
 
 dataloader:
   _target_: torch.utils.data.DataLoader
-  batch_size: 32
+  batch_size: 16
   num_workers: 4
   pin_memory: true
   persistent_workers: true
@@ -83,7 +83,7 @@ optimizer:
 
 lr_scheduler:
   _target_: torch.optim.lr_scheduler.StepLR
-  step_size: 8000
+  step_size: 15600
   gamma: 0.5
 
 loss_function:
@@ -92,7 +92,7 @@ loss_function:
 trainer:
   log_step: 50
   n_epochs: 30
-  epoch_len: 800
+  epoch_len: null
   device_tensors:
     - "audio"
     - "labels"
