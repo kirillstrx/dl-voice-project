@@ -30,10 +30,10 @@ transforms:
 datasets:
   eval:
     _target_: src.datasets.asvspoof_dataset.ASVspoofDataset
-    root: "/Users/kirillstrashnov/.cache/kagglehub/datasets/awsaf49/asvpoof-2019-dataset/versions/1"
+    root: ${oc.env:ASVSPOOF_ROOT}
     split: "eval"
     sample_rate: 16000
-    num_samples: 95840
+    num_samples: 112000
     limit: null
     shuffle_index: false
     instance_transforms: ${transforms.instance_transforms.inference}
@@ -51,9 +51,9 @@ inferencer:
     - "audio"
     - "labels"
 
-  device: "mps"
-  save_path: "asvspoof_lfcc_eval"
-  csv_name: "kivlstrashnov.csv"
+  device: "auto"
+  save_path: "asvspoof_lfcc_7s_eval"
+  csv_name: "predictions.csv"
   seed: 1
-  from_pretrained: "saved/lcnn_lfcc/model_best.pth"
+  from_pretrained: "saved/lcnn_lfcc_final/model_best.pth"
   
