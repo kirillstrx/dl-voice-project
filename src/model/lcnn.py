@@ -55,27 +55,6 @@ class MFMLinear(nn.Module):
         return torch.maximum(first, second)
 
 
-def initialize_lcnn_weights(module):
-    if isinstance(
-        module,
-        (nn.Conv2d, nn.Linear),
-    ):
-        nn.init.kaiming_normal_(
-            module.weight,
-            mode="fan_out",
-            nonlinearity="relu",
-        )
-
-        if module.bias is not None:
-            nn.init.zeros_(module.bias)
-
-    elif isinstance(
-        module,
-        (nn.BatchNorm1d, nn.BatchNorm2d),
-    ):
-        nn.init.ones_(module.weight)
-        nn.init.zeros_(module.bias)
-
 
 class LCNN(nn.Module):
     def __init__(
@@ -160,7 +139,6 @@ class LCNN(nn.Module):
             num_classes,
         )
 
-        self.apply(initialize_lcnn_weights)
 
     def forward(self, audio, **batch):
         features = audio.unsqueeze(1)

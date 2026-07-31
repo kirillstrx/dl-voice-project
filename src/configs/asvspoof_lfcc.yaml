@@ -104,10 +104,9 @@ trainer:
   resume_from: null
   device: "mps"
   override: false
-  monitor: "min dev_loss"
+  monitor: "min dev_EER"
   save_period: 5
   early_stop: 25
   save_dir: "saved"
   seed: 1
   skip_oom: true
-  
