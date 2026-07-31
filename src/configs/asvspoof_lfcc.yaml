@@ -7,7 +7,7 @@ writer:
   _target_: src.logger.WandBWriter
   project_name: "asvspoof2019_lcnn"
   entity: null
-  run_name: "lcnn_lfcc"
+  run_name: "lcnn_lfcc_final"
   mode: "online"
   loss_names: ["loss"]
   log_checkpoints: false
@@ -54,20 +54,20 @@ transforms:
 datasets:
   train:
     _target_: src.datasets.asvspoof_dataset.ASVspoofDataset
-    root: "/Users/kirillstrashnov/.cache/kagglehub/datasets/awsaf49/asvpoof-2019-dataset/versions/1"
+    root: ${oc.env:ASVSPOOF_ROOT}
     split: "train"
     sample_rate: 16000
-    num_samples: 95840
+    num_samples: 112000
     limit: null
     shuffle_index: false
     instance_transforms: ${transforms.instance_transforms.train}
 
   dev:
     _target_: src.datasets.asvspoof_dataset.ASVspoofDataset
-    root: "/Users/kirillstrashnov/.cache/kagglehub/datasets/awsaf49/asvpoof-2019-dataset/versions/1"
+    root: ${oc.env:ASVSPOOF_ROOT}
     split: "dev"
     sample_rate: 16000
-    num_samples: 95840
+    num_samples: 112000
     limit: null
     shuffle_index: false
     instance_transforms: ${transforms.instance_transforms.inference}
@@ -94,7 +94,7 @@ loss_function:
 
 trainer:
   log_step: 50
-  n_epochs: 25
+  n_epochs: 30
   epoch_len: null
 
   device_tensors:
@@ -102,11 +102,11 @@ trainer:
     - "labels"
 
   resume_from: null
-  device: "mps"
+  device: "auto"
   override: false
   monitor: "min dev_EER"
   save_period: 5
-  early_stop: 25
+  early_stop: 30
   save_dir: "saved"
   seed: 1
   skip_oom: true

@@ -128,7 +128,7 @@ class LCNN(nn.Module):
         )
 
         self.embedding = MFMLinear(
-            32 * 1 * 37,
+            32 * 1 * 43,
             80,
         )
 
