@@ -1,0 +1,57 @@
+model:
+  _target_: src.model.lcnn.LCNN
+  dropout: 0.75
+  num_classes: 2
+
+metrics:
+  inference:
+    - _target_: src.metrics.eer.AccuracyMetric
+      name: "Accuracy"
+
+    - _target_: src.metrics.eer.EERMetric
+      name: "EER"
+
+transforms:
+  instance_transforms:
+    inference: null
+
+  batch_transforms:
+    train: null
+
+    inference:
+      audio:
+        _target_: src.transforms.spectrogram.LogPowerSpectrogram
+        n_fft: 1724
+        win_length: 1724
+        hop_length: 130
+        log_epsilon: 1e-6
+
+datasets:
+  eval:
+    _target_: src.datasets.asvspoof_dataset.ASVspoofDataset
+    root: "/Users/kirillstrashnov/.cache/kagglehub/datasets/awsaf49/asvpoof-2019-dataset/versions/1"
+    split: "eval"
+    sample_rate: 16000
+    num_samples: 79594
+    limit: null
+    shuffle_index: false
+    instance_transforms: ${transforms.instance_transforms.inference}
+
+dataloader:
+  _target_: torch.utils.data.DataLoader
+  batch_size: 16
+  num_workers: 4
+  pin_memory: true
+  persistent_workers: true
+  prefetch_factor: 2
+
+inferencer:
+  device_tensors:
+    - "audio"
+    - "labels"
+  device: "mps"
+  save_path: "asvspoof_eval"
+  csv_name: "kivlstrashnov.csv"
+  seed: 1
+  from_pretrained: "saved/lcnn_kaggle_full/model_best.pth"
+  
