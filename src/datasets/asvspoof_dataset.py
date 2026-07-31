@@ -1,12 +1,12 @@
-import random
+import math
 from pathlib import Path
 
 import soundfile as sf
 import torch
-import torch.nn.functional as F
 import torchaudio
 
 from src.datasets.base_dataset import BaseDataset
+
 
 PROTOCOL_NAMES = {
     "train": "ASVspoof2019.LA.cm.train.trn.txt",
@@ -16,16 +16,12 @@ PROTOCOL_NAMES = {
 
 
 class ASVspoofDataset(BaseDataset):
-    """
-    ASVspoof 2019 Logical Access dataset.
-    """
-
     def __init__(
         self,
         root,
         split,
         sample_rate=16000,
-        num_samples=79594,
+        num_samples=95840,
         *args,
         **kwargs,
     ):
@@ -34,21 +30,13 @@ class ASVspoofDataset(BaseDataset):
         self.sample_rate = sample_rate
         self.num_samples = num_samples
 
-        index = self._create_index()
-
         super().__init__(
-            index=index,
+            index=self._create_index(),
             *args,
             **kwargs,
         )
 
     def _create_index(self):
-        """
-        Create dataset index from the protocol file.
-
-        Returns:
-            index (list[dict]): dataset index.
-        """
         protocol_path = self._find_protocol_path()
         audio_dir = self._find_audio_dir()
 
@@ -69,23 +57,19 @@ class ASVspoofDataset(BaseDataset):
         return index
 
     def _find_protocol_path(self):
-        """
-        Find the protocol file inside the dataset directory.
-
-        Returns:
-            protocol_path (Path): path to the protocol file.
-        """
         if self.split not in PROTOCOL_NAMES:
             raise ValueError(
-                f"Unknown split: {self.split}. " "Expected train, dev or eval."
+                f"Unknown split: {self.split}"
             )
 
         protocol_name = PROTOCOL_NAMES[self.split]
-        protocol_paths = list(self.root.rglob(protocol_name))
+        protocol_paths = list(
+            self.root.rglob(protocol_name)
+        )
 
-        if len(protocol_paths) == 0:
+        if not protocol_paths:
             raise FileNotFoundError(
-                f"Protocol file {protocol_name} " f"was not found in {self.root}."
+                f"{protocol_name} was not found in {self.root}"
             )
 
         return protocol_paths[0]
@@ -100,9 +84,8 @@ class ASVspoofDataset(BaseDataset):
                 return audio_dir
 
         raise FileNotFoundError(
-            f"Audio directory for split "
-            f"{self.split} was not found "
-            f"in {self.root}."
+            f"Audio directory for {self.split} "
+            f"was not found in {self.root}"
         )
 
     def load_object(self, path):
@@ -128,40 +111,38 @@ class ASVspoofDataset(BaseDataset):
     def _fix_audio_length(self, audio):
         audio_length = audio.shape[-1]
 
-        if audio_length < self.num_samples:
-            padding = self.num_samples - audio_length
-            audio = F.pad(
-                audio,
-                (0, padding),
+        if audio_length > self.num_samples:
+            start = (
+                audio_length - self.num_samples
+            ) // 2
+
+            audio = audio[
+                start : start + self.num_samples
+            ]
+
+        elif audio_length < self.num_samples:
+            repeats = math.ceil(
+                self.num_samples / audio_length
             )
 
-        elif audio_length > self.num_samples:
-            max_start = audio_length - self.num_samples
-
-            if self.split == "train":
-                start = random.randint(
-                    0,
-                    max_start,
-                )
-            else:
-                start = max_start // 2
-
-            audio = audio[start : start + self.num_samples]
+            audio = audio.repeat(repeats)
+            audio = audio[: self.num_samples]
 
         return audio
 
     def __getitem__(self, ind):
         data_dict = self._index[ind]
 
-        audio = self.load_object(data_dict["path"])
+        audio = self.load_object(
+            data_dict["path"]
+        )
         audio = self._fix_audio_length(audio)
 
-        instance_data = {
-            "audio": audio,
-            "labels": data_dict["label"],
-            "audio_id": data_dict["audio_id"],
-        }
-
-        instance_data = self.preprocess_data(instance_data)
-
-        return instance_data
+        return self.preprocess_data(
+            {
+                "audio": audio,
+                "labels": data_dict["label"],
+                "audio_id": data_dict["audio_id"],
+            }
+        )
+    

@@ -305,9 +305,9 @@ class BaseTrainer:
                 # check whether model performance improved or not,
                 # according to specified metric(mnt_metric)
                 if self.mnt_mode == "min":
-                    improved = logs[self.mnt_metric] <= self.mnt_best
+                    improved = logs[self.mnt_metric] < self.mnt_best
                 elif self.mnt_mode == "max":
-                    improved = logs[self.mnt_metric] >= self.mnt_best
+                    improved = logs[self.mnt_metric] > self.mnt_best
                 else:
                     improved = False
             except KeyError:

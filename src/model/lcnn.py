@@ -29,10 +29,7 @@ class MFMConv2d(nn.Module):
             dim=1,
         )
 
-        return torch.maximum(
-            first,
-            second,
-        )
+        return torch.maximum(first, second)
 
 
 class MFMLinear(nn.Module):
@@ -55,10 +52,7 @@ class MFMLinear(nn.Module):
             dim=1,
         )
 
-        return torch.maximum(
-            first,
-            second,
-        )
+        return torch.maximum(first, second)
 
 
 def initialize_lcnn_weights(module):
@@ -77,10 +71,7 @@ def initialize_lcnn_weights(module):
 
     elif isinstance(
         module,
-        (
-            nn.BatchNorm1d,
-            nn.BatchNorm2d,
-        ),
+        (nn.BatchNorm1d, nn.BatchNorm2d),
     ):
         nn.init.ones_(module.weight)
         nn.init.zeros_(module.bias)
@@ -158,7 +149,7 @@ class LCNN(nn.Module):
         )
 
         self.embedding = MFMLinear(
-            32 * 53 * 37,
+            32 * 1 * 37,
             80,
         )
 
@@ -183,22 +174,25 @@ class LCNN(nn.Module):
         embedding = self.dropout(embedding)
         embedding = self.batch_norm(embedding)
 
-        logits = self.classifier(embedding)
-
         return {
-            "logits": logits,
+            "logits": self.classifier(embedding),
         }
 
     def __str__(self):
-        all_parameters = sum([p.numel() for p in self.parameters()])
+        all_parameters = sum(
+            parameter.numel()
+            for parameter in self.parameters()
+        )
+
         trainable_parameters = sum(
-            [p.numel() for p in self.parameters() if p.requires_grad]
+            parameter.numel()
+            for parameter in self.parameters()
+            if parameter.requires_grad
         )
 
-        result_info = super().__str__()
-        result_info = result_info + f"\nAll parameters: {all_parameters}"
-        result_info = (
-            result_info + "\nTrainable parameters: " + f"{trainable_parameters}"
+        return (
+            f"{super().__str__()}"
+            f"\nAll parameters: {all_parameters}"
+            f"\nTrainable parameters: {trainable_parameters}"
         )
-
-        return result_info
+    
