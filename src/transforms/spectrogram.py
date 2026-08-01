@@ -10,14 +10,6 @@ class LogPowerSpectrogram(nn.Module):
         hop_length=130,
         log_epsilon=1e-6,
     ):
-        """
-        Args:
-            n_fft (int): FFT size.
-            win_length (int): window length.
-            hop_length (int): hop length.
-            log_epsilon (float): minimum value before
-                logarithm.
-        """
         super().__init__()
 
         self.n_fft = n_fft
@@ -32,15 +24,6 @@ class LogPowerSpectrogram(nn.Module):
         )
 
     def forward(self, audio):
-        """
-        Convert waveform into spectrogram.
-
-        Args:
-            audio (Tensor): input waveform.
-
-        Returns:
-            spectrogram (Tensor): log-power spectrogram.
-        """
         spectrum = torch.stft(
             audio,
             n_fft=self.n_fft,

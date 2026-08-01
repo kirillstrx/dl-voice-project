@@ -17,9 +17,7 @@ class BaseDataset(Dataset):
     several datasets, the user only have to define index in a nested class.
     """
 
-    def __init__(
-        self, index, limit=None, shuffle_index=False, instance_transforms=None
-    ):
+    def __init__(self, index, limit=None, shuffle_index=False, instance_transforms=None):
         """
         Args:
             index (list[dict]): list, containing dict for each element of
@@ -99,9 +97,7 @@ class BaseDataset(Dataset):
         """
         if self.instance_transforms is not None:
             for transform_name in self.instance_transforms.keys():
-                instance_data[transform_name] = self.instance_transforms[
-                    transform_name
-                ](instance_data[transform_name])
+                instance_data[transform_name] = self.instance_transforms[transform_name](instance_data[transform_name])
         return instance_data
 
     @staticmethod

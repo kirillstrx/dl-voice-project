@@ -23,130 +23,61 @@ class MFMConv2d(nn.Module):
         )
 
     def forward(self, input_data):
-        first, second = torch.chunk(
-            self.conv(input_data),
-            chunks=2,
-            dim=1,
-        )
+        first, second = torch.chunk(self.conv(input_data), chunks=2, dim=1)
 
         return torch.maximum(first, second)
 
 
 class MFMLinear(nn.Module):
-    def __init__(
-        self,
-        input_size,
-        output_size,
-    ):
+    def __init__(self, input_size, output_size):
         super().__init__()
 
-        self.linear = nn.Linear(
-            input_size,
-            2 * output_size,
-        )
+        self.linear = nn.Linear(input_size, 2 * output_size)
 
     def forward(self, input_data):
-        first, second = torch.chunk(
-            self.linear(input_data),
-            chunks=2,
-            dim=1,
-        )
+        first, second = torch.chunk(self.linear(input_data), chunks=2, dim=1)
 
         return torch.maximum(first, second)
 
 
 
 class LCNN(nn.Module):
-    def __init__(
-        self,
-        dropout=0.75,
-        num_classes=2,
-    ):
+    def __init__(self, dropout=0.75, num_classes=2):
         super().__init__()
 
         self.features = Sequential(
-            MFMConv2d(
-                1,
-                32,
-                kernel_size=5,
-                padding=2,
-            ),
+            MFMConv2d(1, 32, kernel_size=5, padding=2),
             nn.MaxPool2d(2, 2),
-            MFMConv2d(
-                32,
-                32,
-                kernel_size=1,
-            ),
+            MFMConv2d(32, 32, kernel_size=1),
             nn.BatchNorm2d(32),
-            MFMConv2d(
-                32,
-                48,
-                kernel_size=3,
-                padding=1,
-            ),
+            MFMConv2d(32, 48, kernel_size=3, padding=1),
             nn.MaxPool2d(2, 2),
             nn.BatchNorm2d(48),
-            MFMConv2d(
-                48,
-                48,
-                kernel_size=1,
-            ),
+            MFMConv2d(48, 48, kernel_size=1),
             nn.BatchNorm2d(48),
-            MFMConv2d(
-                48,
-                64,
-                kernel_size=3,
-                padding=1,
-            ),
+            MFMConv2d(48, 64, kernel_size=3, padding=1),
             nn.MaxPool2d(2, 2),
-            MFMConv2d(
-                64,
-                64,
-                kernel_size=1,
-            ),
+            MFMConv2d(64, 64, kernel_size=1),
             nn.BatchNorm2d(64),
-            MFMConv2d(
-                64,
-                32,
-                kernel_size=3,
-                padding=1,
-            ),
+            MFMConv2d(64, 32, kernel_size=3, padding=1),
             nn.BatchNorm2d(32),
-            MFMConv2d(
-                32,
-                32,
-                kernel_size=1,
-            ),
+            MFMConv2d(32, 32, kernel_size=1),
             nn.BatchNorm2d(32),
-            MFMConv2d(
-                32,
-                32,
-                kernel_size=3,
-                padding=1,
-            ),
+            MFMConv2d(32, 32, kernel_size=3, padding=1),
             nn.MaxPool2d(2, 2),
         )
 
-        self.embedding = MFMLinear(
-            32 * 1 * 43,
-            80,
-        )
+        self.embedding = MFMLinear(32 * 1 * 43, 80)
 
         self.dropout = nn.Dropout(dropout)
         self.batch_norm = nn.BatchNorm1d(80)
-        self.classifier = nn.Linear(
-            80,
-            num_classes,
-        )
+        self.classifier = nn.Linear(80, num_classes)
 
 
     def forward(self, audio, **batch):
         features = audio.unsqueeze(1)
         features = self.features(features)
-        features = torch.flatten(
-            features,
-            start_dim=1,
-        )
+        features = torch.flatten(features, start_dim=1)
 
         embedding = self.embedding(features)
         embedding = self.dropout(embedding)

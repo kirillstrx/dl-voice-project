@@ -58,19 +58,13 @@ class ASVspoofDataset(BaseDataset):
 
     def _find_protocol_path(self):
         if self.split not in PROTOCOL_NAMES:
-            raise ValueError(
-                f"Unknown split: {self.split}"
-            )
+            raise ValueError(f"Unknown split: {self.split}")
 
         protocol_name = PROTOCOL_NAMES[self.split]
-        protocol_paths = list(
-            self.root.rglob(protocol_name)
-        )
+        protocol_paths = list(self.root.rglob(protocol_name))
 
         if not protocol_paths:
-            raise FileNotFoundError(
-                f"{protocol_name} was not found in {self.root}"
-            )
+            raise FileNotFoundError(f"{protocol_name} was not found in {self.root}")
 
         return protocol_paths[0]
 
@@ -112,18 +106,12 @@ class ASVspoofDataset(BaseDataset):
         audio_length = audio.shape[-1]
 
         if audio_length > self.num_samples:
-            start = (
-                audio_length - self.num_samples
-            ) // 2
+            start = (audio_length - self.num_samples) // 2
 
-            audio = audio[
-                start : start + self.num_samples
-            ]
+            audio = audio[start : start + self.num_samples]
 
         elif audio_length < self.num_samples:
-            repeats = math.ceil(
-                self.num_samples / audio_length
-            )
+            repeats = math.ceil(self.num_samples / audio_length)
 
             audio = audio.repeat(repeats)
             audio = audio[: self.num_samples]
@@ -133,9 +121,7 @@ class ASVspoofDataset(BaseDataset):
     def __getitem__(self, ind):
         data_dict = self._index[ind]
 
-        audio = self.load_object(
-            data_dict["path"]
-        )
+        audio = self.load_object(data_dict["path"])
         audio = self._fix_audio_length(audio)
 
         return self.preprocess_data(
